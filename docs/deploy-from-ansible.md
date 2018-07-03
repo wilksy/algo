@@ -220,6 +220,13 @@ Possible regions:
 You need to source the rc file prior to run Algo. Download it from the OpenStack dashboard->Compute->API Access and source it in the shell (eg: source /tmp/dhc-openrc.sh)
 
 
+### Hetzner
+
+Required variables:
+
+- [hetzner_token](https://docs.hetzner.cloud/#overview-authentication)
+- [region](https://wiki.hetzner.de/index.php/Rechenzentren_und_Anbindung/en#Which_Data_Centers_does_Hetzner_operate.3F)
+
 ### Local
 
 Required variables:
