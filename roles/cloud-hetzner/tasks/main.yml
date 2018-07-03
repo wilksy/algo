@@ -1,0 +1,75 @@
+- block:
+  - name: Include prompts
+    import_tasks: prompts.yml
+
+  - name: Check if server exists
+    uri:
+      url: https://api.hetzner.cloud/v1/servers
+      method: GET
+      headers:
+        Content-Type: 'application/json'
+        Authorization: "Bearer {{ algo_hetzner_token }}"
+      status_code: 200
+    register: servers
+
+  - name: Set server id as a fact
+    set_fact:
+      server_id: "{{ item.id }}"
+    no_log: true
+    when: algo_server_name == item.name
+    with_items: "{{ servers.json.servers }}"
+
+  - name: Create a server if it doesn't exist
+    block:
+    - name: Create a server
+      uri:
+        url: https://api.hetzner.cloud/v1/servers
+        method: POST
+        headers:
+          Content-Type: 'application/json'
+          Authorization: "Bearer {{ algo_hetzner_token }}"
+        body:
+          name: "{{ algo_server_name }}"
+          server_type: "{{ cloud_providers.hetzner.server_type }}"
+          image: "{{ cloud_providers.hetzner.image }}"
+          location: "{{ algo_region }}"
+          user_data: |
+            #cloud-config
+            users:
+              - default
+              - name: ubuntu
+                sudo: ALL=(ALL) NOPASSWD:ALL
+                groups: sudo
+                home: /home/ubuntu
+                shell: /bin/bash
+                lock_passwd: True
+                ssh_authorized_keys:
+                  - {{ lookup('file', SSH_keys.public) }}
+        status_code: 201
+        body_format: json
+      register: algo_instance
+
+    - name: Set server id as a fact
+      set_fact:
+        server_id: "{{ algo_instance.json.server.id }}"
+    when: server_id is not defined
+
+  - name: Get the server info
+    uri:
+      url: "https://api.hetzner.cloud/v1/servers/{{ server_id }}"
+      method: GET
+      headers:
+        Content-Type: 'application/json'
+        Authorization: "Bearer {{ algo_hetzner_token }}"
+      status_code: 200
+    register: algo_instance
+
+  - set_fact:
+      cloud_instance_ip: "{{ algo_instance['json']['server']['public_net']['ipv4']['ip'] }}"
+      ansible_ssh_user: ubuntu
+
+  rescue:
+  - debug: var=fail_hint
+    tags: always
+  - fail:
+    tags: always

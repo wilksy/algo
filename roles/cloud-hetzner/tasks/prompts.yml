@@ -1,0 +1,40 @@
+---
+- pause:
+    prompt: |
+      Enter your auth token (https://docs.hetzner.cloud/#overview-authentication)
+    echo: false
+  register: _hetzner_token
+  when: hetzner_token is undefined
+
+- name: Set the token as a fact
+  set_fact:
+    algo_hetzner_token: "{{ hetzner_token | default(_hetzner_token.user_input) }}"
+
+- name: Get regions
+  uri:
+    url: https://api.hetzner.cloud/v1/locations
+    method: GET
+    status_code: 200
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer {{ algo_hetzner_token }}"
+  register: _hetzner_regions
+
+- pause:
+    prompt: |
+      What region should the server be located in?
+        {% for r in _hetzner_regions['json']['locations'] %}
+        {{ loop.index }}. {{ r['name'] }} {{ r['city'] }}
+        {% endfor %}
+
+      Enter the number of your desired region
+      [fsn1]
+  register: _algo_region
+  when: region is undefined
+
+- name: Set facts
+  set_fact:
+    algo_region: >-
+      {% if region is defined %}{{ region }}
+      {%- elif _algo_region.user_input is defined and _algo_region.user_input != "" %}{{ _hetzner_regions['json']['locations'][_algo_region.user_input | int -1 ]['name'] }}
+      {%- else %}fsn1{% endif %}

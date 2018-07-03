@@ -18,6 +18,7 @@
       - { name: Microsoft Azure, alias: azure }
       - { name: Google Compute Engine, alias: gce }
       - { name: Scaleway, alias: scaleway}
+      - { name: Hetzner, alias: hetzner}
       - { name: OpenStack (DreamCompute optimised), alias: openstack }
       - { name: Install to existing Ubuntu 16.04 server (Advanced), alias: local }
   vars_files:

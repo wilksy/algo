@@ -7,6 +7,10 @@
     with_items:
       - python2.7
       - sudo
+    register: result
+    until: result is succeeded
+    retries: 10
+    delay: 3
 
   - name: Ubuntu | Configure defaults
     alternatives:
@@ -98,6 +102,9 @@
 - set_fact:
     apparmor_enabled: true
   when: '"profiles are in enforce mode" in apparmor_status.stdout'
+
+- name: Update the facts
+  setup:
 
 - set_fact:
     tools:

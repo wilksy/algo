@@ -31,6 +31,8 @@
       when: algo_provider == "lightsail"
     - role: cloud-scaleway
       when: algo_provider == "scaleway"
+    - role: cloud-hetzner
+      when: algo_provider == "hetzner"
     - role: cloud-openstack
       when: algo_provider == "openstack"
     - role: local
