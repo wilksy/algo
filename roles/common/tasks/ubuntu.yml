@@ -1,23 +1,10 @@
 ---
-- block:
-  - name: Ubuntu | Install prerequisites
-    apt:
-      name: "{{ item }}"
-      update_cache: true
-    with_items:
-      - python2.7
-      - sudo
-
-  - name: Ubuntu | Configure defaults
-    alternatives:
-      name: python
-      link: /usr/bin/python
-      path: /usr/bin/python2.7
-      priority: 1
-    tags:
-      - update-alternatives
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
+- name: Ubuntu | Install prerequisites
+  apt:
+    name: "{{ item }}"
+    update_cache: true
+  with_items:
+    - sudo
 
 - name: Gather facts
   setup:
