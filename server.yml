@@ -1,7 +1,6 @@
 ---
 - name: Configure the server and install required software
   hosts: vpn-host
-  gather_facts: false
   tags: algo
   become: true
   vars_files:

@@ -1,14 +1,10 @@
 ---
 - block:
-  - name: Check the system
-    raw: uname -a
-    register: OS
-
   - include_tasks: ubuntu.yml
-    when: '"Ubuntu" in OS.stdout or "Linux" in OS.stdout'
+    when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
   - include_tasks: freebsd.yml
-    when: '"FreeBSD" in OS.stdout'
+    when: ansible_distribution == 'FreeBSD'
 
   - name: Gather additional facts
     import_tasks: facts.yml
