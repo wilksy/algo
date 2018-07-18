@@ -42,7 +42,7 @@
             groups: vpn-host
             ansible_ssh_user: "{{ server_user|default('root') }}"
             ansible_connection: "{% if algo_server == 'localhost' %}local{% else %}ssh{% endif %}"
-            ansible_python_interpreter: "/usr/bin/python2.7"
+            ansible_python_interpreter: /usr/bin/python3
             CA_password: "{{ CA_password }}"
       rescue:
         - debug: var=fail_hint
