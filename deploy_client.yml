@@ -23,6 +23,7 @@
   pre_tasks:
     - name: Get the OS
       raw: uname -a
+      changed_when: false
       register: distribution
 
     - name: Modify the server name fact

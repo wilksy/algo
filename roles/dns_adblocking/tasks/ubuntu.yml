@@ -12,7 +12,7 @@
     - restart dnsmasq
 
 - name: Ubuntu | Enforce the dnsmasq AppArmor policy
-  shell: aa-enforce usr.sbin.dnsmasq
+  command: aa-enforce usr.sbin.dnsmasq
   when: apparmor_enabled|default(false)|bool == true
   tags: ['apparmor']
 

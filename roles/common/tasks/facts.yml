@@ -5,6 +5,7 @@
       module: shell
         openssl rand -hex 16
     register: CA_password
+    tags: skip_ansible_lint
 
   - name: Generate p12 export password
     local_action:

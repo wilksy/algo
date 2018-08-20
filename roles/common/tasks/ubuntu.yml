@@ -91,9 +91,10 @@
     - always
 
 - name: Check apparmor support
-  shell: apparmor_status
+  command: apparmor_status
   ignore_errors: yes
   register: apparmor_status
+  changed_when: false
 
 - set_fact:
     apparmor_enabled: true

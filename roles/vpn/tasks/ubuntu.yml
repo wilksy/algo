@@ -9,9 +9,10 @@
     state: latest
     update_cache: yes
     install_recommends: yes
+  tags: skip_ansible_lint
 
 - name: Ubuntu | Enforcing ipsec with apparmor
-  shell: aa-enforce "{{ item }}"
+  command: aa-enforce "{{ item }}"
   when: apparmor_enabled|default(false)|bool == true
   with_items:
     - /usr/lib/ipsec/charon

@@ -114,7 +114,7 @@
     with_items: "{{ users }}"
 
   - name: Build the client's p12
-    shell: >
+    command: >
       {{ openssl_bin }} pkcs12
       -in certs/{{ item }}.crt
       -inkey private/{{ item }}.key
@@ -183,5 +183,7 @@
   when:
     - gencrl is defined
     - gencrl.changed
+  tags:
+    - skip_ansible_lint
   notify:
     - rereadcrls

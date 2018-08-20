@@ -65,8 +65,8 @@ install:
 
 script:
   # - awesome_bot --allow-dupe --skip-save-results *.md docs/*.md --white-list paypal.com,do.co,microsoft.com,https://github.com/trailofbits/algo/archive/master.zip,https://github.com/trailofbits/algo/issues/new
-# - shellcheck algo
-# - ansible-lint main.yml users.yml deploy_client.yml
+  - shellcheck algo
+  - ansible-lint -x ANSIBLE0011 *.yml
   - ansible-playbook main.yml --syntax-check
   - ./tests/local-deploy.sh
   - ./tests/update-users.sh
