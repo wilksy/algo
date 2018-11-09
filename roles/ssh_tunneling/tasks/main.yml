@@ -25,27 +25,76 @@
         owner: root
         group: "{{ root_group|default('root') }}"
 
-    - name: Ensure that the SSH users exist
-      user:
-        name: "{{ item }}"
-        groups: algo
-        home: '/var/jail/{{ item }}'
-        createhome: yes
-        generate_ssh_key: false
-        shell: /bin/false
-        state: present
-        append: yes
-      with_items: "{{ users }}"
-      tags: update-users
+    - block:
+      - name: Ensure that the SSH users exist
+        user:
+          name: "{{ item }}"
+          groups: algo
+          home: '/var/jail/{{ item }}'
+          createhome: yes
+          generate_ssh_key: false
+          shell: /bin/false
+          state: present
+          append: yes
+        with_items: "{{ users }}"
 
-    - name: The authorized keys file created
-      authorized_key:
-        user: "{{ item }}"
-        key: "{{ lookup('file', 'configs/' + IP_subject_alt_name + '/pki/public/' + item + '.pub') }}"
-        state: present
-        manage_dir: true
-        exclusive: true
-      with_items: "{{ users }}"
+      - block:
+        - name: Build ssh keys
+          shell: >
+            umask 077;
+            test -f {{ item }}.ssh.pem ||
+            ssh-keygen -t ecdsa -f {{ item }}.ssh.pem -N "" -b 384 -q >/dev/null &&
+            ssh-keygen -y -f {{ item }}.ssh.pem > {{ item }}.pub
+          args:
+            chdir: "configs/{{ IP_subject_alt_name }}/"
+            creates: "{{ item }}.pub"
+            executable: bash
+          with_items: "{{ users }}"
+
+        - name: Set ssh public key path as a fact
+          set_fact:
+            ssh_public_keys_path: "configs/{{ IP_subject_alt_name }}/"
+        when: not ipsec_enabled
+        delegate_to: localhost
+        become: false
+
+      - name: Set ssh public key path as a fact
+        set_fact:
+          ssh_public_keys_path: "configs/{{ IP_subject_alt_name }}/pki/public/"
+        when: ssh_public_keys_path is not defined
+
+      - name: The authorized keys file created
+        authorized_key:
+          user: "{{ item }}"
+          key: "{{ lookup('file', ssh_public_keys_path + item + '.pub') }}"
+          state: present
+          manage_dir: true
+          exclusive: true
+        with_items: "{{ users }}"
+
+      - name: Build the client ssh config
+        local_action:
+          module: template
+          src: ssh_config.j2
+          dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh_config
+          mode: 0600
+        become: false
+        with_items: "{{ users }}"
+
+      - name: Get active users
+        getent:
+          database: group
+          key: algo
+          split: ':'
+
+      - name: Delete non-existing users
+        user:
+          name: "{{ item }}"
+          state: absent
+          remove: yes
+          force: yes
+        when: item not in users
+        with_items: "{{ getent_group['algo'][2].split(',') }}"
       tags: update-users
 
     - name: Generate SSH fingerprints
@@ -58,33 +107,6 @@
         src: known_hosts.j2
         dest: configs/{{ IP_subject_alt_name }}/known_hosts
       become: no
-
-    - name: Build the client ssh config
-      local_action:
-        module: template
-        src: ssh_config.j2
-        dest: configs/{{ IP_subject_alt_name }}/{{ item }}.ssh_config
-        mode: 0600
-      become: false
-      tags: update-users
-      with_items: "{{ users }}"
-
-    - name: Get active users
-      getent:
-        database: group
-        key: algo
-        split: ':'
-      tags: update-users
-
-    - name: Delete non-existing users
-      user:
-        name: "{{ item }}"
-        state: absent
-        remove: yes
-        force: yes
-      when: item not in users
-      with_items: "{{ getent_group['algo'][2].split(',') }}"
-      tags: update-users
   rescue:
     - debug: var=fail_hint
       tags: always

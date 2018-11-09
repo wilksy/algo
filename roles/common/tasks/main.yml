@@ -20,6 +20,9 @@
     tags:
       - always
 
+  - include_tasks: iptables.yml
+    tags: iptables
+
   - meta: flush_handlers
   rescue:
     - debug: var=fail_hint
