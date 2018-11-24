@@ -22,6 +22,7 @@
       - pyOpenSSL
       - jinja2==2.8
       - segno
+      - netaddr
   tags: always
 
 - name: Generate the SSH private key

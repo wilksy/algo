@@ -1,6 +1,6 @@
 [Interface]
 PrivateKey = {{ lookup('file', wireguard_config_path + '/private/' + item.1) }}
-Address = {{ wireguard_client_ip }}
+Address = {{ wireguard_network_ipv4 | ipaddr(index) }}{{ ',' + wireguard_network_ipv6 | ipaddr(index) if ipv6_support else '' }}
 DNS = {{ wireguard_dns_servers }}
 
 [Peer]
