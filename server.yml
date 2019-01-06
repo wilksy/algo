@@ -13,7 +13,7 @@
     - role: dns_encryption
       when: dns_encryption
       tags: dns_encryption
-    - role: dns_adblocking
+    - role: pihole
       when: algo_local_dns
       tags: dns_adblocking
     - role: wireguard
